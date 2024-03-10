@@ -29,7 +29,7 @@ def get_network_interfaces_and_mac_addresses():
         if 'adapter' in line.lower() and ':' in line:
             current_interface = line.split(':')[0].strip()
         elif 'physical address' in line.lower():
-            mac_addr = line.split(':')[1].strip()
+            mac_addr = line.split(':')[1].strip().replace('-', ':')  # Replace hyphens with colons
             macs_and_interfaces.append((current_interface, mac_addr))
             
     return macs_and_interfaces
