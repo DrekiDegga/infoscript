@@ -89,7 +89,7 @@ for (interface_type, interface_name ,mac_address) in mac_addresses_interfaces_ty
    
    button_command=lambda mac_address=mac_address :copy_to_clipboard(mac_address)
    
-   color = 'green' if interface_type in ['Ethernet', 'Wi-Fi', 'Bluetooth'] else 'black'
+   color = 'green' if interface_type in ['Ethernet', 'Wi-Fi'] else 'black'
    
    label=Label(frame,text=label_text, fg=color)
    button=Button(frame,text="Copy",command=button_command)
