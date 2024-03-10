@@ -69,10 +69,11 @@ def create_gui(info):
       mac_address_label_value=Label(adapter_frame,text=str(adapter[1]))
       mac_address_label_value.pack(side=LEFT)
 
-      copy_button_network_adapter_mac_addresss_value_only_Button(adapter_frame,text="Copy",command=lambda text=str(adapter[1]):copy_to_clipboard(root,text))
-      copy_button_network_adapter_mac_addresss_value_only_Button(packside_LEFT)
+      copy_button_network_adapter_mac_addresss_value_only_Button = Button(adapter_frame,text="Copy",command=lambda text=str(adapter[1]):copy_to_clipboard(root,text))
+      copy_button_network_adapter_mac_addresss_value_only_Button.pack(side=LEFT)
        
-      type_of_adapter_label_Value_Labelnetwork_frametextstradapter2type_of_adapter_label_Value_LabelpacksideLEFT
+      type_of_adapter_label_Value_Label = Label(adapter_frame, text=str(adapter[2]))
+      type_of_adapter_label_Value_Label.pack(side=LEFT)
    
    
 root.mainloop()
