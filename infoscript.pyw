@@ -47,6 +47,15 @@ def get_network_interfaces_and_mac_addresses():
             
     return macs_and_interfaces_and_types
 
+# Function to copy to clipboard.
+def copy_to_clipboard(text):
+    pyperclip.copy(text)
+
+# Function to get a command for a button.
+def get_button_command(mac_address):
+    return lambda: copy_to_clipboard(mac_address)
+
+
 root=Tk()
 root.geometry("500x800")
 
