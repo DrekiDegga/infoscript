@@ -19,12 +19,12 @@ def get_service_tag():
 # Function to categorize network adapter type.
 def categorize_network_adapter_type(interface_name):
     interface_name_lower = interface_name.lower()
-    if 'ethernet' in interface_name_lower:
-        return 'Ethernet'
+    if 'bluetooth' in interface_name_lower:
+        return 'Bluetooth'
     elif 'wi-fi' in interface_name_lower or 'wifi' in interface_name_lower:
         return 'Wi-Fi'
-    elif 'bluetooth' in interface_name_lower:
-        return 'Bluetooth'
+    elif 'ethernet' in interface_name_lower:
+        return 'Ethernet'
     else:
         return 'Other'
 
@@ -48,9 +48,10 @@ def get_network_interfaces_and_mac_addresses():
     return macs_and_interfaces_and_types
 
 root=Tk()
-root.geometry("500x500")
+root.geometry("500x800")
 
-canvas=Canvas(root)
+canvas = Canvas(root, width=500, height=800, bg='white')
+
 frame=Frame(canvas)
 scrollbar=Scrollbar(root, orient="vertical", command=canvas.yview)
 
@@ -79,7 +80,9 @@ for (interface_type, interface_name ,mac_address) in mac_addresses_interfaces_ty
    
    button_command=lambda mac_address=mac_address :copy_to_clipboard(mac_address)
    
-   label=Label(frame,text=label_text)
+   color = 'green' if interface_type in ['Ethernet', 'Wi-Fi', 'Bluetooth'] else 'black'
+   
+   label=Label(frame,text=label_text, fg=color)
    button=Button(frame,text="Copy",command=button_command)
 
    label.pack(pady=5)
