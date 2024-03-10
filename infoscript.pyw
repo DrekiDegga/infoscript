@@ -37,7 +37,7 @@ def get_network_interfaces_and_mac_addresses():
 # Function to copy to clipboard.
 def copy_to_clipboard(text):
     pyperclip.copy(text)
-    messagebox.showinfo("Copied", "Copied to clipboard!")
+    # Removed the popup message box from here.
 
 root = Tk()
 root.geometry("500x500")
