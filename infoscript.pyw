@@ -1,72 +1,83 @@
-import os
-import subprocess
-import re
-from tkinter import *
+import socket
+import wmi
+from tkinter import Tk, Label, Button, Frame, X, LEFT
 import pyperclip
 
 def get_system_info():
-    # Computer name
-    computer_name = os.environ['COMPUTERNAME']
+    info = {}
 
-    # Manufacturer 
-    manufacturer = subprocess.check_output('wmic csproduct get vendor', shell=True).decode().split('\n')[1].strip()
+    # Get computer name
+    info['Computer Name'] = socket.gethostname()
 
-    # Serial number or Service tag in case of Dell machines
-    if manufacturer.lower() == "dell inc.":
-        service_tag = subprocess.check_output('wmic bios get servicetag', shell=True).decode().split('\n')[1].strip()
-        unique_id = f"Dell Service Tag: {service_tag}"
-    else:
-        serial_number = subprocess.check_output('wmic bios get serialnumber', shell=True).decode().split('\n')[1].strip()
-        unique_id = f"Serial Number: {serial_number}"
-
-    # Network interfaces info using getmac command
-    network_info = subprocess.check_output('getmac /V /FO list', shell=True).decode()
+    # Get serial number/service tag and Model 
+    c = wmi.WMI()
     
-    return (computer_name, unique_id, network_info)
+    try:
+        for bios in c.Win32_BIOS():
+            info['Serial Number'] = bios.SerialNumber  # On Dell machines this will be the service tag
+        
+        for system in c.Win32_ComputerSystem():
+            info['Model'] = system.Model
 
-def copy_to_clipboard(text):
-   pyperclip.copy(text)
+    except Exception as e:
+        info['Serial Number'] = "Error: " + str(e)
 
-def display_info(info):
-    root = Tk()
+    # Get MAC address and Network Adapter Type 
+    net_info_list=[]
+    
+    for interface in c.Win32_NetworkAdapter():
+        if interface.MACAddress is not None:
+            net_info_list.append((interface.NetConnectionID,':'.join(['{:02x}'.format((uuid.getnode() >> i) & 0xff) for i in range(0,8*6,8)][::-1]),interface.AdapterType))
+    
+    info['Network Information']=net_info_list
 
-    Label(root, text="Computer Name: ").pack(side=LEFT)
-    Label(root, text=info[0]).pack(side=LEFT)
-    Button(root, text="Copy", command=lambda: copy_to_clipboard(info[0])).pack(side=LEFT)
+    return info
 
+def copy_to_clipboard(root,text):
+   root.clipboard_clear()
+   root.clipboard_append(text)
 
+def create_gui(info):
+   root=Tk()
+   
+   for key in ['Computer Name','Serial Number', 'Model']:
+       row_frame=Frame(root)
+       row_frame.pack(fill=X)
+       
+       label_key=Label(row_frame,text=key+": ")
+       label_key.pack(side=LEFT)
 
-    net_info_lines = info[2].split("\n")
-    mac_addresses = []
-     
-    for i in range(len(net_info_lines)):
-        if "Physical Address:" in net_info_lines[i]:
-            mac_address = re.findall("..-..-..-..-..-..", net_info_lines[i])[0]
-            connection_name = re.findall(":.+", net_info_lines[i-2])[0][2:]
-            transport_type = re.findall(":.+", net_info_lines[i+2])[0][2:]
-             if 'Wi-Fi' in connection_name or 'Wireless' in connection_name:
-                device_type = "WiFi"
-            elif 'Ethernet' in connection_name:
-                device_type = "Ethernet"
-            else:
-                device_type ="Unknown"
-                
-            mac_addresses.append(mac_address)
-            
-           Label(root, text=f"Network Device: {device_type}").pack()
-            Label(root, text=f"Connection Name: {connection_name}").pack()
-            
-           frame_mac=Frame(root)  # Corrected indentation here.
-           frame_mac.pack()
-             
-           Label(frame_mac, text=f"MAC Address: ").pack(side=LEFT)
-           Label(frame_mac, text=mac_address).pack(side=LEFT)
-           Button(frame_mac, text="Copy", command=lambda: copy_to_clipboard(mac_address)).pack(side=LEFT)
+       label_value=Label(row_frame,text=info[key])
+       label_value.pack(side=LEFT)
 
-    Button(root, text="Copy All MAC Addresses", command=lambda: copy_to_clipboard('\n'.join(mac_addresses))).pack()
-     
-    root.mainloop()
+       copy_button=Button(row_frame,text="Copy",command=lambda text=info[key]:copy_to_clipboard(root,text))
+       copy_button.pack(side=LEFT)
+   
+   network_frame=Frame(root)
+   network_frame.pack(fill=X)
+
+   network_label_key=Label(network_frame,text='Network Information: ')
+   network_label_key.pack()
+
+   for adapter in info["Network Information"]:
+      adapter_frame=Frame(network_frame)
+      adapter_frame.pack(fill=X)
+
+      adapter_name_label=Label(adapter_frame,text=str(adapter[0])+": ")
+      adapter_name_label.pack(side=LEFT)
+      
+      mac_address_label_value=Label(adapter_frame,text=str(adapter[1]))
+      mac_address_label_value.pack(side=LEFT)
+
+      copy_button_network_adapter_mac_addresss_value_only_Button(adapter_frame,text="Copy",command=lambda text=str(adapter[1]):copy_to_clipboard(root,text))
+      copy_button_network_adapter_mac_addresss_value_only_Button(packside_LEFT)
+       
+      type_of_adapter_label_Value_Labelnetwork_frametextstradapter2type_of_adapter_label_Value_LabelpacksideLEFT
+   
+   
+root.mainloop()
 
 if __name__ == "__main__":
-   info = get_system_info()
-   display_info(info)
+   system_info=get_system_info()
+   
+create_gui(system_info)
