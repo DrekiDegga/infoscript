@@ -29,11 +29,11 @@ def copy_to_clipboard(text):
 
 def display_info(info):
     root = Tk()
-    
+
     Label(root, text="Computer Name: ").pack(side=LEFT)
     Label(root, text=info[0]).pack(side=LEFT)
     Button(root, text="Copy", command=lambda: copy_to_clipboard(info[0])).pack(side=LEFT)
-    
+   
      Label(root, text=info[1].split(':')[0] + ': ').pack(side=LEFT)
      Label(root, text=info[1].split(':')[1]).pack(side=LEFT)
      Button(root, text="Copy", command=lambda: copy_to_clipboard(info[1].split(':')[1])).pack(side=LEFT)
@@ -59,12 +59,12 @@ def display_info(info):
              Label(root, text=f"Network Device: {device_type}").pack()
              Label(root, text=f"Connection Name: {connection_name}").pack()
              
-              Frame_mac=root.Frame()
-              Frame_mac.pack()
+              frame_mac=Frame(root)  # Corrected here.
+              frame_mac.pack()
               
-              Label(Frame_mac, text=f"MAC Address: ").pack(side=LEFT)
-              Label(Frame_mac, text=mac_address).pack(side=LEFT)
-              Button(Frame_mac, text="Copy", command=lambda: copy_to_clipboard(mac_address)).pack(side=LEFT)
+              Label(frame_mac, text=f"MAC Address: ").pack(side=LEFT)
+              Label(frame_mac, text=mac_address).pack(side=LEFT)
+              Button(frame_mac, text="Copy", command=lambda: copy_to_clipboard(mac_address)).pack(side=LEFT)
 
      Button(root, text="Copy All MAC Addresses", command=lambda: copy_to_clipboard('\n'.join(mac_addresses))).pack()
      
