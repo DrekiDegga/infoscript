@@ -1,84 +1,42 @@
-import socket
-import wmi
-from tkinter import Tk, Label, Button, Frame, X, LEFT
-import pyperclip
+import tkinter as tk
+import subprocess
+import getmac
 
 def get_system_info():
-    info = {}
+    # Fetching system info using subprocess
+    computer_name = subprocess.check_output('hostname', shell=True).decode().strip()
+    model_name = subprocess.check_output('wmic csproduct get name', shell=True).decode().split('\n')[1].strip()
+    serial_num = subprocess.check_output('wmic bios get serialnumber', shell=True).decode().split('\n')[1].strip()
 
-    # Get computer name
-    info['Computer Name'] = socket.gethostname()
+    # Fetching MAC addresses using getmac package
+    mac_info = []
+    mac_addresses = getmac.get_mac_address(interface="all", nics=True)
+    for interface in mac_addresses:
+        mac_info.append((interface[0], interface[2]))
 
-    # Get serial number/service tag and Model 
-    c = wmi.WMI()
-    
-    try:
-        for bios in c.Win32_BIOS():
-            info['Serial Number'] = bios.SerialNumber  # On Dell machines this will be the service tag
-        
-        for system in c.Win32_ComputerSystem():
-            info['Model'] = system.Model
+    return computer_name, model_name, serial_num, mac_info
 
-    except Exception as e:
-        info['Serial Number'] = "Error: " + str(e)
+def copy_to_clipboard(text):
+    root.clipboard_clear()
+    root.clipboard_append(text)
 
-    # Get MAC address and Network Adapter Type 
-    net_info_list=[]
-    
-    for interface in c.Win32_NetworkAdapter():
-        if interface.MACAddress is not None:
-            net_info_list.append((interface.NetConnectionID,':'.join(['{:02x}'.format((uuid.getnode() >> i) & 0xff) for i in range(0,8*6,8)][::-1]),interface.AdapterType))
-    
-    info['Network Information']=net_info_list
+root = tk.Tk()
 
-    return info
+# Fetching system info
+computer_name, model_name, serial_num, mac_info = get_system_info()
 
-def copy_to_clipboard(root,text):
-   root.clipboard_clear()
-   root.clipboard_append(text)
+# Displaying fetched info in GUI window
+tk.Label(root, text=f"Computer Name: {computer_name}").pack()
+tk.Button(root, text="Copy", command=lambda: copy_to_clipboard(computer_name)).pack()
 
-def create_gui(info):
-   root=Tk()
-   
-   for key in ['Computer Name','Serial Number', 'Model']:
-       row_frame=Frame(root)
-       row_frame.pack(fill=X)
-       
-       label_key=Label(row_frame,text=key+": ")
-       label_key.pack(side=LEFT)
+tk.Label(root, text=f"Model Name: {model_name}").pack()
+tk.Button(root, text="Copy", command=lambda: copy_to_clipboard(model_name)).pack()
 
-       label_value=Label(row_frame,text=info[key])
-       label_value.pack(side=LEFT)
+tk.Label(root, text=f"Serial Number / Service Tag: {serial_num}").pack()
+tk.Button(root, text="Copy", command=lambda: copy_to_clipboard(serial_num)).pack()
 
-       copy_button=Button(row_frame,text="Copy",command=lambda text=info[key]:copy_to_clipboard(root,text))
-       copy_button.pack(side=LEFT)
-   
-   network_frame=Frame(root)
-   network_frame.pack(fill=X)
+for interface in mac_info:
+  tk.Label(root,text=f"{interface[0]} MAC Address: {interface[1]}").pack()
+  tk.Button(root,text="Copy",command=lambda i=interface[1]:copy_to_clipboard(i)).pack()
 
-   network_label_key=Label(network_frame,text='Network Information: ')
-   network_label_key.pack()
-
-   for adapter in info["Network Information"]:
-      adapter_frame=Frame(network_frame)
-      adapter_frame.pack(fill=X)
-
-      adapter_name_label=Label(adapter_frame,text=str(adapter[0])+": ")
-      adapter_name_label.pack(side=LEFT)
-      
-      mac_address_label_value=Label(adapter_frame,text=str(adapter[1]))
-      mac_address_label_value.pack(side=LEFT)
-
-      copy_button_network_adapter_mac_addresss_value_only_Button = Button(adapter_frame,text="Copy",command=lambda text=str(adapter[1]):copy_to_clipboard(root,text))
-      copy_button_network_adapter_mac_addresss_value_only_Button.pack(side=LEFT)
-       
-      type_of_adapter_label_Value_Label = Label(adapter_frame, text=str(adapter[2]))
-      type_of_adapter_label_Value_Label.pack(side=LEFT)
-   
-   
 root.mainloop()
-
-if __name__ == "__main__":
-   system_info=get_system_info()
-   
-create_gui(system_info)
