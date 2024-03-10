@@ -19,12 +19,12 @@ def get_service_tag():
 # Function to categorize network adapter type.
 def categorize_network_adapter_type(interface_name):
     interface_name_lower = interface_name.lower()
-    if 'bluetooth' in interface_name_lower:
-        return 'Bluetooth'
+    if 'ethernet' in interface_name_lower:
+        return 'Ethernet'
     elif 'wi-fi' in interface_name_lower or 'wifi' in interface_name_lower:
         return 'Wi-Fi'
-    elif 'ethernet' in interface_name_lower:
-        return 'Ethernet'
+    elif 'bluetooth' in interface_name_lower:
+        return 'Bluetooth'
     else:
         return 'Other'
 
@@ -47,22 +47,24 @@ def get_network_interfaces_and_mac_addresses():
             
     return macs_and_interfaces_and_types
 
-# Function to copy to clipboard.
-def copy_to_clipboard(text):
-    pyperclip.copy(text)
-
-# Function to get a command for a button.
-def get_button_command(mac_address):
-    return lambda: copy_to_clipboard(mac_address)
-
-root = Tk()
+root=Tk()
 root.geometry("500x500")
 
-host_label = Label(root, text=f"Host Name: {get_host_name()}")
-service_label = Label(root, text=f"Service Tag: {get_service_tag()}")
+canvas=Canvas(root)
+frame=Frame(canvas)
+scrollbar=Scrollbar(root, orient="vertical", command=canvas.yview)
 
-host_button=Button(root,text="Copy",command=lambda :copy_to_clipboard(get_host_name()))
-service_button=Button(root,text="Copy",command=lambda :copy_to_clipboard(get_service_tag()))
+canvas.configure(yscrollcommand=scrollbar.set)
+
+scrollbar.pack(side="right", fill="y")
+canvas.pack(side="left")
+canvas.create_window((0,0), window=frame, anchor='nw')
+
+host_label=Label(frame,text=f"Host Name: {get_host_name()}")
+service_label=Label(frame,text=f"Service Tag: {get_service_tag()}")
+
+host_button=Button(frame,text="Copy",command=lambda :copy_to_clipboard(get_host_name()))
+service_button=Button(frame,text="Copy",command=lambda :copy_to_clipboard(get_service_tag()))
 
 host_label.pack(pady=10)
 host_button.pack(pady=10)
@@ -75,13 +77,15 @@ for (interface_type, interface_name ,mac_address) in mac_addresses_interfaces_ty
 
    label_text=f"{interface_type}:\n{interface_name}: {mac_address}"
    
-   # Only copy the MAC address when button is clicked
-   button_command=get_button_command(mac_address)
+   button_command=lambda mac_address=mac_address :copy_to_clipboard(mac_address)
    
-   label=Label(root,text=label_text)
-   button=Button(root,text="Copy",command=button_command)
+   label=Label(frame,text=label_text)
+   button=Button(frame,text="Copy",command=button_command)
 
    label.pack(pady=5)
    button.pack(pady=5)
+
+frame.update()
+canvas.configure(scrollregion=canvas.bbox("all"))
 
 root.mainloop()
