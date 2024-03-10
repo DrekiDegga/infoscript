@@ -33,42 +33,39 @@ def display_info(info):
     Label(root, text="Computer Name: ").pack(side=LEFT)
     Label(root, text=info[0]).pack(side=LEFT)
     Button(root, text="Copy", command=lambda: copy_to_clipboard(info[0])).pack(side=LEFT)
-   
-     Label(root, text=info[1].split(':')[0] + ': ').pack(side=LEFT)
-     Label(root, text=info[1].split(':')[1]).pack(side=LEFT)
-     Button(root, text="Copy", command=lambda: copy_to_clipboard(info[1].split(':')[1])).pack(side=LEFT)
 
-     net_info_lines = info[2].split("\n")
-     mac_addresses = []
+
+
+    net_info_lines = info[2].split("\n")
+    mac_addresses = []
      
-     for i in range(len(net_info_lines)):
-         if "Physical Address:" in net_info_lines[i]:
-             mac_address = re.findall("..-..-..-..-..-..", net_info_lines[i])[0]
-             connection_name = re.findall(":.+", net_info_lines[i-2])[0][2:]
-             transport_type = re.findall(":.+", net_info_lines[i+2])[0][2:]
-
+    for i in range(len(net_info_lines)):
+        if "Physical Address:" in net_info_lines[i]:
+            mac_address = re.findall("..-..-..-..-..-..", net_info_lines[i])[0]
+            connection_name = re.findall(":.+", net_info_lines[i-2])[0][2:]
+            transport_type = re.findall(":.+", net_info_lines[i+2])[0][2:]
              if 'Wi-Fi' in connection_name or 'Wireless' in connection_name:
-                 device_type = "WiFi"
-             elif 'Ethernet' in connection_name:
-                 device_type = "Ethernet"
-             else:
-                 device_type ="Unknown"
-                 
-             mac_addresses.append(mac_address)
+                device_type = "WiFi"
+            elif 'Ethernet' in connection_name:
+                device_type = "Ethernet"
+            else:
+                device_type ="Unknown"
+                
+            mac_addresses.append(mac_address)
+            
+           Label(root, text=f"Network Device: {device_type}").pack()
+            Label(root, text=f"Connection Name: {connection_name}").pack()
+            
+           frame_mac=Frame(root)  # Corrected indentation here.
+           frame_mac.pack()
              
-             Label(root, text=f"Network Device: {device_type}").pack()
-             Label(root, text=f"Connection Name: {connection_name}").pack()
-             
-              frame_mac=Frame(root)  # Corrected here.
-              frame_mac.pack()
-              
-              Label(frame_mac, text=f"MAC Address: ").pack(side=LEFT)
-              Label(frame_mac, text=mac_address).pack(side=LEFT)
-              Button(frame_mac, text="Copy", command=lambda: copy_to_clipboard(mac_address)).pack(side=LEFT)
+           Label(frame_mac, text=f"MAC Address: ").pack(side=LEFT)
+           Label(frame_mac, text=mac_address).pack(side=LEFT)
+           Button(frame_mac, text="Copy", command=lambda: copy_to_clipboard(mac_address)).pack(side=LEFT)
 
-     Button(root, text="Copy All MAC Addresses", command=lambda: copy_to_clipboard('\n'.join(mac_addresses))).pack()
+    Button(root, text="Copy All MAC Addresses", command=lambda: copy_to_clipboard('\n'.join(mac_addresses))).pack()
      
-     root.mainloop()
+    root.mainloop()
 
 if __name__ == "__main__":
    info = get_system_info()
