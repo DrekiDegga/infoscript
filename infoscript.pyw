@@ -57,7 +57,9 @@ service_button.pack(pady=10)
 mac_addresses = get_network_interfaces_and_mac_addresses()
 for (interface_name, mac_address) in mac_addresses:
     label_text = f"{interface_name} (MAC Address): {mac_address}"
-    label_button_command=lambda x=label_text:copy_to_clipboard(x)
+    
+    # Only copy the MAC address when button is clicked
+    label_button_command=lambda x=mac_address:copy_to_clipboard(x)
     
     label = Label(root, text=label_text)
     button = Button(root, text="Copy", command=label_button_command)
