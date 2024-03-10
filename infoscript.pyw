@@ -38,7 +38,7 @@ def get_network_interfaces_and_mac_addresses():
     for line in lines:
         if 'adapter' in line.lower() and ':' in line:
             current_interface = line.split(':')[0].strip()
-            current_interface_type = categorize_network_adapter_type(current_interface)  # Categorize network adapter type
+            current_interface_type = current_interface  # Categorize network adapter type
             current_interface += f" ({current_interface_type})"
         elif 'physical address' in line.lower():
             mac_addr = line.split(':')[1].strip().replace('-', ':')  # Replace hyphens with colons
