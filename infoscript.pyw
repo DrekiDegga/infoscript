@@ -1,42 +1,75 @@
-import tkinter as tk
+import os
 import subprocess
-import getmac
+import re
+from tkinter import *
+import pyperclip
 
 def get_system_info():
-    # Fetching system info using subprocess
-    computer_name = subprocess.check_output('hostname', shell=True).decode().strip()
-    model_name = subprocess.check_output('wmic csproduct get name', shell=True).decode().split('\n')[1].strip()
-    serial_num = subprocess.check_output('wmic bios get serialnumber', shell=True).decode().split('\n')[1].strip()
+    # Computer name
+    computer_name = os.environ['COMPUTERNAME']
 
-    # Fetching MAC addresses using getmac package
-    mac_info = []
-    mac_addresses = getmac.get_mac_address(interface="all", nics=True)
-    for interface in mac_addresses:
-        mac_info.append((interface[0], interface[2]))
+    # Manufacturer 
+    manufacturer = subprocess.check_output('wmic csproduct get vendor', shell=True).decode().split('\n')[1].strip()
 
-    return computer_name, model_name, serial_num, mac_info
+    # Serial number or Service tag in case of Dell machines
+    if manufacturer.lower() == "dell inc.":
+        service_tag = subprocess.check_output('wmic bios get servicetag', shell=True).decode().split('\n')[1].strip()
+        unique_id = f"Dell Service Tag: {service_tag}"
+    else:
+        serial_number = subprocess.check_output('wmic bios get serialnumber', shell=True).decode().split('\n')[1].strip()
+        unique_id = f"Serial Number: {serial_number}"
+
+    # Network interfaces info using getmac command
+    network_info = subprocess.check_output('getmac /V /FO list', shell=True).decode()
+    
+    return (computer_name, unique_id, network_info)
 
 def copy_to_clipboard(text):
-    root.clipboard_clear()
-    root.clipboard_append(text)
+   pyperclip.copy(text)
 
-root = tk.Tk()
+def display_info(info):
+    root = Tk()
+    
+    Label(root, text="Computer Name: ").pack(side=LEFT)
+    Label(root, text=info[0]).pack(side=LEFT)
+    Button(root, text="Copy", command=lambda: copy_to_clipboard(info[0])).pack(side=LEFT)
+    
+     Label(root, text=info[1].split(':')[0] + ': ').pack(side=LEFT)
+     Label(root, text=info[1].split(':')[1]).pack(side=LEFT)
+     Button(root, text="Copy", command=lambda: copy_to_clipboard(info[1].split(':')[1])).pack(side=LEFT)
 
-# Fetching system info
-computer_name, model_name, serial_num, mac_info = get_system_info()
+     net_info_lines = info[2].split("\n")
+     mac_addresses = []
+     
+     for i in range(len(net_info_lines)):
+         if "Physical Address:" in net_info_lines[i]:
+             mac_address = re.findall("..-..-..-..-..-..", net_info_lines[i])[0]
+             connection_name = re.findall(":.+", net_info_lines[i-2])[0][2:]
+             transport_type = re.findall(":.+", net_info_lines[i+2])[0][2:]
 
-# Displaying fetched info in GUI window
-tk.Label(root, text=f"Computer Name: {computer_name}").pack()
-tk.Button(root, text="Copy", command=lambda: copy_to_clipboard(computer_name)).pack()
+             if 'Wi-Fi' in connection_name or 'Wireless' in connection_name:
+                 device_type = "WiFi"
+             elif 'Ethernet' in connection_name:
+                 device_type = "Ethernet"
+             else:
+                 device_type ="Unknown"
+                 
+             mac_addresses.append(mac_address)
+             
+             Label(root, text=f"Network Device: {device_type}").pack()
+             Label(root, text=f"Connection Name: {connection_name}").pack()
+             
+              Frame_mac=root.Frame()
+              Frame_mac.pack()
+              
+              Label(Frame_mac, text=f"MAC Address: ").pack(side=LEFT)
+              Label(Frame_mac, text=mac_address).pack(side=LEFT)
+              Button(Frame_mac, text="Copy", command=lambda: copy_to_clipboard(mac_address)).pack(side=LEFT)
 
-tk.Label(root, text=f"Model Name: {model_name}").pack()
-tk.Button(root, text="Copy", command=lambda: copy_to_clipboard(model_name)).pack()
+     Button(root, text="Copy All MAC Addresses", command=lambda: copy_to_clipboard('\n'.join(mac_addresses))).pack()
+     
+     root.mainloop()
 
-tk.Label(root, text=f"Serial Number / Service Tag: {serial_num}").pack()
-tk.Button(root, text="Copy", command=lambda: copy_to_clipboard(serial_num)).pack()
-
-for interface in mac_info:
-  tk.Label(root,text=f"{interface[0]} MAC Address: {interface[1]}").pack()
-  tk.Button(root,text="Copy",command=lambda i=interface[1]:copy_to_clipboard(i)).pack()
-
-root.mainloop()
+if __name__ == "__main__":
+   info = get_system_info()
+   display_info(info)
