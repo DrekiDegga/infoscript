@@ -33,16 +33,19 @@ def get_network_interfaces_and_mac_addresses():
     output = subprocess.check_output("ipconfig /all", universal_newlines=True)
     lines = output.split('\n')
     
-    macs_and_types = []
+    macs_and_interfaces_and_types = []
     
     for line in lines:
         if 'adapter' in line.lower() and ':' in line:
-            current_interface_type = categorize_network_adapter_type(line)  # Categorize network adapter type based on entire line text
-        elif 'physical address' in line.lower():
+            current_interface = line.split(':')[0].strip()
+            current_interface_type = categorize_network_adapter_type(current_interface)  # Categorize network adapter type
+            macs_and_interfaces_and_types.append((current_interface_type, current_interface, None))
+        elif 'physical address' in line.lower() and macs_and_interfaces_and_types:  # Ensure there's already an entry before assigning a MAC address
             mac_addr = line.split(':')[1].strip().replace('-', ':')  # Replace hyphens with colons
-            macs_and_types.append((current_interface_type, mac_addr))
+            (interface_type, interface_name, _) = macs_and_interfaces_and_types.pop()
+            macs_and_interfaces_and_types.append((interface_type, interface_name, mac_addr))
             
-    return macs_and_types
+    return macs_and_interfaces_and_types
 
 # Function to copy to clipboard.
 def copy_to_clipboard(text):
@@ -58,8 +61,8 @@ root.geometry("500x500")
 host_label = Label(root, text=f"Host Name: {get_host_name()}")
 service_label = Label(root, text=f"Service Tag: {get_service_tag()}")
 
-host_button = Button(root, text="Copy", command=lambda: copy_to_clipboard(get_host_name()))
-service_button = Button(root, text="Copy", command=lambda: copy_to_clipboard(get_service_tag()))
+host_button=Button(root,text="Copy",command=lambda :copy_to_clipboard(get_host_name()))
+service_button=Button(root,text="Copy",command=lambda :copy_to_clipboard(get_service_tag()))
 
 host_label.pack(pady=10)
 host_button.pack(pady=10)
@@ -67,16 +70,16 @@ host_button.pack(pady=10)
 service_label.pack(pady=10)
 service_button.pack(pady=10)
 
-mac_addresses_and_types = get_network_interfaces_and_mac_addresses()
-for (interface_type, mac_address) in mac_addresses_and_types:
-    
-   label_text = f"{interface_type}: {mac_address}"
-    
+mac_addresses_interfaces_types=get_network_interfaces_and_mac_addresses()
+for (interface_type, interface_name ,mac_address) in mac_addresses_interfaces_types:
+
+   label_text=f"{interface_type}:\n{interface_name}: {mac_address}"
+   
    # Only copy the MAC address when button is clicked
    button_command=get_button_command(mac_address)
    
-   label=Label(root, text=label_text)
-   button=Button(root, text="Copy", command=button_command)
+   label=Label(root,text=label_text)
+   button=Button(root,text="Copy",command=button_command)
 
    label.pack(pady=5)
    button.pack(pady=5)
