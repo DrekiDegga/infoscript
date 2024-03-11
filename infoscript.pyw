@@ -159,7 +159,7 @@ qr_img_label.pack()
 qr_img_label.imgtk = generate_qr_code(host_name if host_name else '')
 qr_img_label.configure(image=qr_img_label.imgtk)
 
-# Create label and QR code image for host name inside a frame in the qr codes tab.
+# Create label and QR code image for service tag inside a frame in the qr codes tab.
 interface_frame4 = Frame(frame2, borderwidth=5, relief="groove")
 interface_frame4.grid(row=2, column=0)
 Label(interface_frame4, text=f"Service Tag:\n {service_tag}").pack() # Create label
