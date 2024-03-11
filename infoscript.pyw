@@ -124,6 +124,11 @@ tabControl.add(qr_tab, text ='QR codes')
 # Pack the notebook into root widget. With expand set to 1 and fill set to "both", it will expand and shrink with window resizing.
 tabControl.pack(expand = 1, fill ="both")
 
+
+# Create a window in each canvas where we will place our frames.
+window1 = canvas1.create_window(0, 0, anchor='nw', window=frame1)
+window2 = canvas2.create_window(0, 0, anchor='nw', window=frame2)
+
 # Section 5: Populating GUI with labels and buttons
 
 # Get host name, service tag and network interface details.
@@ -147,6 +152,12 @@ for i, (interface_type, interface_name, mac_addr) in enumerate(macs_and_interfac
     qr_img_label.grid(row=i*2+1,column=0)
     qr_img_label.imgtk = generate_qr_code(mac_addr if mac_addr else '')
     qr_img_label.configure(image=qr_img_label.imgtk)
+
+# After adding all items in frame:
+
+root.update() # Update root
+canvas1.configure(scrollregion=canvas1.bbox('all')) # Set scroll region on basis of frame's bbox
+canvas2.configure(scrollregion=canvas2.bbox('all'))
 
 # The main event loop is started by calling the Tkinter widget's mainloop method. 
 root.mainloop()
