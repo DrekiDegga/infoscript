@@ -14,7 +14,7 @@ from tkinter import ttk
 # pyperclip is used for copying text to clipboard.
 import pyperclip 
 
-# qrcode and PIL are used for generating and displaying QR codes.
+# qrcode and pillow are used for generating and displaying QR codes.
 import qrcode
 from PIL import ImageTk
 
