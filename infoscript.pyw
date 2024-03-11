@@ -137,15 +137,15 @@ service_tag = get_service_tag()
 macs_and_interfaces_and_types = get_network_interfaces_and_mac_addresses()
 
 # Create label and button for host name in the copy tab
-Label(frame1, text=f"Host Name: {host_name}").grid(row=1, column=0)
+Label(frame1, text=f"Host Name:\n {host_name}").grid(row=1, column=0)
 Button(frame1, text="Copy", command=lambda host_name=host_name: copy_to_clipboard(host_name)).grid(row=2, column=0)
 
 # Create label and button for service tag in the copy tab
-Label(frame1, text=f"Service Tag {service_tag}").grid(row=3, column=0)
+Label(frame1, text=f"Service Tag:\n {service_tag}").grid(row=3, column=0)
 Button(frame1, text="Copy", command=lambda service_tag=service_tag: copy_to_clipboard(service_tag)).grid(row=4, column=0)
 
 # Create label and QR code image for host name in the qr codes tab.
-Label(frame2, text=f"Host name: {host_name}").grid(row=1, column=0) # Create label
+Label(frame2, text=f"Host name:\n {host_name}").grid(row=1, column=0) # Create label
 
 # Create QR code from host name (if it exists)
 qr_img_label = Label(frame2)
@@ -154,7 +154,7 @@ qr_img_label.imgtk = generate_qr_code(host_name if host_name else '')
 qr_img_label.configure(image=qr_img_label.imgtk)
 
 # Create label and QR code image for host name in the qr codes tab.
-Label(frame2, text=f"Service Tag: {service_tag}").grid(row=3, column=0) # Create label
+Label(frame2, text=f"Service Tag:\n {service_tag}").grid(row=3, column=0) # Create label
 # Create QR code from service tag (if it exists)
 qr_img_label = Label(frame2)
 qr_img_label.grid(row=4,column=0)
@@ -165,25 +165,29 @@ qr_img_label.configure(image=qr_img_label.imgtk)
 # Create labels and buttons for each network interface and add them to the "Copy" tab frame.
 for i, (interface_type, interface_name, mac_addr) in enumerate(macs_and_interfaces_and_types):
     # Create a label with network interface details.
-    Label(frame1, text=f"{interface_type}: {interface_name} - MAC Address: {mac_addr if mac_addr else 'N/A'}").grid(row=16+i*2, column=0)
+    if interface_type in ['Ethernet', 'Wi-Fi']:
+        Label(frame1, text=f"{interface_type}:\n {interface_name} - MAC Address:\n {mac_addr if mac_addr else 'N/A'}", fg='green').grid(row=16+i*2, column=0)
+    else:
+        Label(frame1, text=f"{interface_type}:\n {interface_name} - MAC Address:\n {mac_addr if mac_addr else 'N/A'}").grid(row=16+i*2, column=0)
     # Create a button that copies MAC address to clipboard when clicked.
     Button(frame1, text="Copy", command=lambda mac_addr=mac_addr: copy_to_clipboard(mac_addr if mac_addr else '')).grid(row=16+i*2+1, column=0)
 
 # For each label/button pair in the "Copy" tab frame, also create a label and QR code image in the "QR codes" tab frame.
 for i, (interface_type, interface_name, mac_addr) in enumerate(macs_and_interfaces_and_types):
     # Create a label with network interface details.
-    Label(frame2, text=f"{interface_type}: {interface_name} - MAC Address: {mac_addr if mac_addr else 'N/A'}").grid(row=16+i*2,column=0)
+    if interface_type in ['Ethernet', 'Wi-Fi']:
+        Label(frame2, text=f"{interface_type}:\n {interface_name} - MAC Address:\n {mac_addr if mac_addr else 'N/A'}", fg='green').grid(row=16+i*2, column=0)
+    else:
+        Label(frame2, text=f"{interface_type}:\n {interface_name} - MAC Address:\n {mac_addr if mac_addr else 'N/A'}").grid(row=16+i*2, column=0)
     # Generate QR code from MAC address (if it exists), otherwise from empty string. Then create an image label from this QR code image.
     qr_img_label = Label(frame2)
     qr_img_label.grid(row=16+i*2+1,column=0)
     qr_img_label.imgtk = generate_qr_code(mac_addr if mac_addr else '')
     qr_img_label.configure(image=qr_img_label.imgtk)
 
-# After adding all items in frame:
-
+# After adding all items in frame, we need to update root and set scroll region
 root.update() # Update root
 canvas1.configure(scrollregion=canvas1.bbox('all')) # Set scroll region on basis of frame's bbox
 canvas2.configure(scrollregion=canvas2.bbox('all'))
 
-# The main event loop is started by calling the Tkinter widget's mainloop method. 
 root.mainloop()
