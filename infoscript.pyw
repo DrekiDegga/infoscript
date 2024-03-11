@@ -51,7 +51,7 @@ def get_network_interfaces_and_mac_addresses():
 def copy_to_clipboard(text):
     pyperclip.copy(text)
 
-# Function to get a command for a button.
+# Function to get a command for a button. (New Test edit)
 def get_button_command(mac_address):
     return lambda: copy_to_clipboard(mac_address)
 
